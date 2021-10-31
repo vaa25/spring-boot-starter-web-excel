@@ -1,0 +1,171 @@
+= spring-boot-starter-web-excel
+
+Provides ability to upload and download excel file as list or stream of java objects. +
+Using streams permits to not keep all data in memory, but to process it line by line. +
+Uses https://github.com/vaa25/poiji2[Poiji2] as excel parser.
+
+In your Maven/Gradle project, first add the corresponding dependency:
+
+.maven
+[source,xml]
+----
+<dependency>
+    <groupId>io.github.vaa25</groupId>
+    <artifactId>spring-boot-starter-web-excel</artifactId>
+    <version>0.0.1</version>
+</dependency>
+
+----
+
+.gradle
+[source,groovy]
+----
+dependencies {
+    implementation 'io.github.vaa25:spring-boot-starter-web-excel:0.0.1'
+}
+----
+
+[source]
+----
+public class RowEntity{
+
+    @ExcelCellName("column1")
+    private Integer column1;
+
+    @ExcelCellName("column2")
+    private String column2;
+
+}
+----
+
+To download file enough to send ExcelHttpFile as response from rest controller. +
+`Accept` request header must contain one of next values: +
+
+ - `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` to get xlsx file
+ - `application/vnd.ms-excel` to get xls file
+ - `text/csv` to get csv file
+
+[source]
+----
+import static io.github.vaa25.excel.ExcelFormat.Constants.*
+
+@RestController
+public class Controller{
+
+    @GetMapping(value = "/download-from-list", produces = {XLSX_MEDIA_TYPE_VALUE, CSV_MEDIA_TYPE_VALUE, XLS_MEDIA_TYPE_VALUE})
+    public ExcelHttpFile<RowEntity> downloadList(){
+
+        List<RowEntity> content = getContent();
+        return ExcelHttpFile.of("file_name", content, RowEntity.class);
+
+    }
+
+    @GetMapping(value = "/download-from-stream", produces = {XLSX_MEDIA_TYPE_VALUE, CSV_MEDIA_TYPE_VALUE, XLS_MEDIA_TYPE_VALUE})
+    public ExcelHttpFile<RowEntity> downloadStream(){
+
+        Stream<RowEntity> content = getContent();
+        return ExcelHttpFile.of("file_name", content, RowEntity.class);
+
+    }
+
+
+}
+----
+
+To upload file enough to replace @RequestPart with @RequestExcelFile and receive List or Stream as data
+
+[source]
+----
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+
+@RestController
+public class Controller{
+
+    @PostMapping(value = "/upload-to-stream", consumes = MULTIPART_FORM_DATA_VALUE)
+    public void uploadStream(@RequestExcelFile("fileToUpload") final Stream<RowEntity> data){
+        ...
+    }
+
+    @PostMapping(value = "/upload-to-list", consumes = MULTIPART_FORM_DATA_VALUE)
+    public void uploadList(@RequestExcelFile("fileToUpload") final List<RowEntity> data){
+        ...
+    }
+
+}
+----
+
+Poiji options supported. You can redefine default options as bean. It will be used in all transformations if explicit options are absent.
+
+[source]
+----
+import static io.github.vaa25.excel.RequestExcelFile.DEFAULT_EXCEL_OPTIONS_BEAN_NAME;
+
+@Configuration
+public class Config{
+
+    @Bean(DEFAULT_EXCEL_OPTIONS_BEAN_NAME)
+    public void defaultExcelOptions(){
+        return PoijiOptions.PoijiOptionsBuilder.settings().preferNullOverDefault(true).build();
+    }
+
+}
+----
+
+Explicit options can be added as beans and used next way:
+
+[source]
+----
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+
+@RestController
+public class Controller{
+
+    @PostMapping(value = "/upload-to-stream", consumes = MULTIPART_FORM_DATA_VALUE)
+    public void uploadStream(
+        @RequestExcelFile(value = "fileToUpload", optionsBean = "uploadOptions") final Stream<RowEntity> data
+    ){
+        ...
+    }
+
+    @GetMapping(value = "/download-from-list", produces = {XLSX_MEDIA_TYPE_VALUE, CSV_MEDIA_TYPE_VALUE, XLS_MEDIA_TYPE_VALUE})
+    public ExcelHttpFile<RowEntity> downloadList(){
+
+        List<RowEntity> content = getContent();
+        return ExcelHttpFile.of("file_name", content, RowEntity.class).setOptionsBean("downloadOptions");
+
+    }
+
+}
+----
+
+Options can be built dynamically for download:
+
+[source]
+----
+import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
+
+@RestController
+public class Controller{
+
+    @GetMapping(value = "/download-from-list", produces = {XLSX_MEDIA_TYPE_VALUE, CSV_MEDIA_TYPE_VALUE, XLS_MEDIA_TYPE_VALUE})
+    public ExcelHttpFile<RowEntity> downloadList(){
+
+        List<RowEntity> content = getContent();
+        return ExcelHttpFile.of("file_name", content, RowEntity.class).setOptions(buildOptions());
+
+    }
+
+    private PoijiOptions buildOptions(){
+
+        return PoijiOptions.PoijiOptionsBuilder.settings().build();
+
+    }
+
+}
+----
+
+Options have next priority:
+
+1. Dynamic options (for download only)
+2. Bean options
+3. Default options
