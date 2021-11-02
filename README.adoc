@@ -9,23 +9,36 @@ In your Maven/Gradle project, first add the corresponding dependency:
 .maven
 [source,xml]
 ----
-<dependency>
-    <groupId>io.github.vaa25</groupId>
-    <artifactId>spring-boot-starter-web-excel</artifactId>
-    <version>0.0.1</version>
-</dependency>
-
+<dependencies>
+    <dependency>
+        <groupId>io.github.vaa25</groupId>
+        <artifactId>spring-boot-starter-web-excel</artifactId>
+        <version>0.0.3</version>
+    </dependency>
+    <dependency>
+        <groupId>io.github.vaa25</groupId>
+        <artifactId>poiji2</artifactId>
+        <version>1.2.1</version>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.poi</groupId>
+        <artifactId>poi-ooxml</artifactId>
+        <version>4.1.2</version>
+    </dependency>
+</dependencies>
 ----
 
 .gradle
 [source,groovy]
 ----
 dependencies {
-    implementation 'io.github.vaa25:spring-boot-starter-web-excel:0.0.1'
+    implementation 'io.github.vaa25:spring-boot-starter-web-excel:0.0.3'
+    implementation 'io.github.vaa25:poiji2:1.2.1'
+    implementation 'org.apache.poi:poi-ooxml:4.1.2'
 }
 ----
 
-[source]
+[source,java]
 ----
 public class RowEntity{
 
@@ -45,7 +58,7 @@ To download file enough to send ExcelHttpFile as response from rest controller. 
  - `application/vnd.ms-excel` to get xls file
  - `text/csv` to get csv file
 
-[source]
+[source,java]
 ----
 import static io.github.vaa25.excel.ExcelFormat.Constants.*
 
@@ -74,7 +87,7 @@ public class Controller{
 
 To upload file enough to replace @RequestPart with @RequestExcelFile and receive List or Stream as data
 
-[source]
+[source,java]
 ----
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -96,7 +109,7 @@ public class Controller{
 
 Poiji options supported. You can redefine default options as bean. It will be used in all transformations if explicit options are absent.
 
-[source]
+[source,java]
 ----
 import static io.github.vaa25.excel.RequestExcelFile.DEFAULT_EXCEL_OPTIONS_BEAN_NAME;
 
@@ -113,7 +126,7 @@ public class Config{
 
 Explicit options can be added as beans and used next way:
 
-[source]
+[source,java]
 ----
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
@@ -140,7 +153,7 @@ public class Controller{
 
 Options can be built dynamically for download:
 
-[source]
+[source,java]
 ----
 import static org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE;
 
