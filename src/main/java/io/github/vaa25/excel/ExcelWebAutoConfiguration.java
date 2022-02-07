@@ -45,7 +45,7 @@ public class ExcelWebAutoConfiguration implements WebMvcConfigurer {
     }
 
     @Bean(DEFAULT_EXCEL_OPTIONS_BEAN_NAME)
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(name = DEFAULT_EXCEL_OPTIONS_BEAN_NAME)
     public PoijiOptions defaultExcelOptions(){
         return PoijiOptions.PoijiOptionsBuilder.settings().build();
     }
