@@ -16,7 +16,6 @@ java {
     withSourcesJar()
 }
 
-group 'io.github.vaa25'
 archivesBaseName = 'spring-boot-starter-web-excel'
 version = System.getenv('RELEASE_VERSION') ?: "1.0.0"
 
@@ -26,13 +25,13 @@ repositories {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'io.github.vaa25:poiji2:1.2.1'
-    implementation 'org.apache.poi:poi-ooxml:5.0.0'
+    implementation 'io.github.vaa25:poiji2:1.5.0'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
 test {
-    useJUnitPlatform()
+    useJUnit()
 }
 
 jar {
